@@ -184,7 +184,7 @@ def p9():
 # Run different parts of this test program by un/commenting the bits you do/don't want.
 surround_test("1. This should print an error (or usage) message:", p1)
 surround_test("2. This should show both dir1 and dir2 as directories:", p2)
-#surround_test("3. This should show sync file contents:", p3)
+surround_test("3. This should show sync file contents:", p3)
 #surround_test("4. This should show two different sync files:", p4)
 #surround_test("5. This should show two matching directories:", p5)
 #surround_test("""6. This should show two matching directories
