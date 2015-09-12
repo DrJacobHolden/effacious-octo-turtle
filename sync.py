@@ -111,6 +111,9 @@ def update_sync_file(dir):
 			continue
 		if os.path.isdir("%s/%s" % (dir, disk_file)):
 			#subdirectories
+			if dir in subdir_dict:
+				if subdir_dict[dir].count(disk_file) > 0:
+					continue
 			print("Detective Steve has found the subdirectory %s in %s." % (disk_file, dir))
 			if dir in subdir_dict:
 				subdir_dict[dir].append(disk_file)
@@ -142,20 +145,19 @@ start_sync(topdir1, topdir2)
 #If the subdirectory is present in both top level dirs, it will be synced twice.
 #There is probably a way around it but it doesn't really make that much difference
 #and is much easier this way. KISS
-print(subdir_dict)
-for key in subdir_dict.keys():
-	for dir in subdir_dict[key]:
-		if key is topdir1 or key is topdir2:
-			#differentiate between sub directories and sub-sub directories
-			print("%s/%s" % (topdir1, dir))
-			print("%s/%s" % (topdir2, dir))
-			start_sync("%s/%s" % (topdir1, dir), "%s/%s" % (topdir2, dir))
-		else:
-			maindir = "%s/%s" % (key, dir)
-			if key.contains(topdir1):
-				otherdir = "%s/%s" % (topdir2, key.split("/")[1:])
+while(len(subdir_dict.keys()) != 0):
+	print(subdir_dict)
+	for key in subdir_dict.keys():
+		for dir in subdir_dict[key]:
+			if key is topdir1 or key is topdir2:
+				#differentiate between sub directories and sub-sub directories
+				start_sync("%s/%s" % (topdir1, dir), "%s/%s" % (topdir2, dir))
 			else:
-				otherdir = "%s/%s" % (topdir1, key.split("/")[1:])
-			print(maindir)
-			print(otherdir)
+				maindir = "%s/%s" % (key, dir)
+				if topdir1 in key:
+					otherdir = "%s%s/%s" % (topdir2, key.lstrip(topdir1), dir)
+				else:
+					otherdir = "%s%s/%s" % (topdir1, key.lstrip(topdir2), dir)
+				start_sync(maindir, otherdir)
+		del subdir_dict[key]
 
