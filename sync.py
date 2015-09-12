@@ -36,16 +36,31 @@ def convertTimeEpoch(timezzzz):
 def convertTimeReadable(timezzzz):
 	return time.strftime("%Y-%m-%d %H:%M:%S %z", timezzzz)
 
-def sync_and_create(dir):
-	other_dir = "dir2" if dir == "dir1" else "dir1"
-	os.mkdir(other_dir)
-	sync(dir, other_dir)
+def sync_and_create(dir1, dir2):
+	os.mkdir(dir2)
+	sync(dir1, dir2)
 
 def sync(dir1, dir2):
 	update_sync_file(dir1)
 	update_sync_file(dir2)
 	pass
 
+def start_sync(dir1, dir2):
+	#Both directories exist
+	if os.path.isdir(dir1) and os.path.isdir(dir2):
+		sync(dir1, dir2)
+	elif os.path.isdir(dir1):
+		sync_and_create(dir1, dir2)
+	elif os.path.isdir(dir2):
+		sync_and_create(dir2, dir1)
+	else:
+		print("Stop trying to \"Sink\" imaginary directories.")
+
+"""
+Updates the sync file to represent the current directory contents.
+This handles updated files, deleted files and also creates the sync
+file if there is not one already existing.
+"""
 def update_sync_file(dir):
 	sync = '%s/.sync' % dir
 	files = os.listdir(dir)
@@ -83,9 +98,6 @@ def update_sync_file(dir):
 				print("Detective Steve has updated the sync file for %s/%s" % (dir, dict_file))
 				file_dict[dict_file].insert(0, [file_modified_time, hash])
 
-			#print(dict_file)
-			#print(file_dict[dict_file][0][0])
-
 			files.remove(disk_file) #This file has been done now, remove it from the list
 		else:
 			if file_dict[dict_file][0][1] != "deleted":
@@ -97,20 +109,18 @@ def update_sync_file(dir):
 		#Ignore hidden files
 		if disk_file.startswith('.'):
 			continue
+		if os.path.isdir("%s/%s" % (dir, disk_file)):
+			#subdirectories
+			print("Detective Steve has found the subdirectory %s in %s." % (disk_file, dir))
+			if dir in subdir_dict:
+				subdir_dict[dir].append(disk_file)
+			else:
+				subdir_dict[dir] = []
+				subdir_dict[dir].append(disk_file)
+			continue
 		print("Detective Steve has found a new file %s in %s adding to sync." % (disk_file, dir))
 		file_dict[disk_file] = [get_file_state('%s/%s' % (dir, disk_file))]
-		# Add to sync file
 
-
-
-	#file_dict = {
-	#	"file1_1.txt" : [
-	#		[
-	#			"2015-08-31 13:25:55 +1200", 
-	#			"a2ebea1d55e6059dfb7b8e8354e0233d501da9d968ad3686c49d6a443b9520a8"
-	#		]
-	#	]
-	#}
 	with open('%s/.sync' % dir, 'w') as outfile:
 		json.dump(file_dict, outfile)
 	pass
@@ -119,13 +129,33 @@ def update_sync_file(dir):
 if len(sys.argv) != 3:
 	print("Don't push me buddy. (A few more arguments would be nice.)")
 
-#Both directories exist
-if os.path.isdir(sys.argv[1]) and os.path.isdir(sys.argv[2]):
-	sync(sys.argv[1], sys.argv[2])
-elif os.path.isdir(sys.argv[1]):
-	sync_and_create(sys.argv[1])
-elif os.path.isdir(sys.argv[2]):
-	sync_and_create(sys.argv[2])
-else:
-	print("Stop trying to \"Sink\" imaginary directories.")
+subdir_dict = {}
+
+#Store the starting point
+topdir1 = sys.argv[1]
+topdir2 = sys.argv[2]
+
+#Initially sync the top level directories
+start_sync(topdir1, topdir2)
+
+#Sync the subdirectories
+#If the subdirectory is present in both top level dirs, it will be synced twice.
+#There is probably a way around it but it doesn't really make that much difference
+#and is much easier this way. KISS
+print(subdir_dict)
+for key in subdir_dict.keys():
+	for dir in subdir_dict[key]:
+		if key is topdir1 or key is topdir2:
+			#differentiate between sub directories and sub-sub directories
+			print("%s/%s" % (topdir1, dir))
+			print("%s/%s" % (topdir2, dir))
+			start_sync("%s/%s" % (topdir1, dir), "%s/%s" % (topdir2, dir))
+		else:
+			maindir = "%s/%s" % (key, dir)
+			if key.contains(topdir1):
+				otherdir = "%s/%s" % (topdir2, key.split("/")[1:])
+			else:
+				otherdir = "%s/%s" % (topdir1, key.split("/")[1:])
+			print(maindir)
+			print(otherdir)
 
