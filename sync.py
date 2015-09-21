@@ -83,8 +83,6 @@ def update_sync_file(dir):
 			disk_file = files[files.index(dict_file)]
 
 			[file_modified_time, hash] = get_file_state('%s/%s' % (dir, dict_file))
-			#print(file_modified_time)
-			#print(hash)
 
 			#File has not been changed since last sync
 			if hash == file_dict[dict_file][0][1]:
@@ -127,7 +125,8 @@ def update_sync_file(dir):
 		file_dict[disk_file] = [get_file_state('%s/%s' % (dir, disk_file))]
 
 	with open('%s/.sync' % dir, 'w') as outfile:
-		json.dump(file_dict, outfile)
+		outfile.write(json.dumps(file_dict, indent=4, sort_keys=True))
+		#json.dump(file_dict, outfile)
 	pass
 
 """
@@ -211,13 +210,13 @@ def merge_dirs(dir1, dir2):
 					file2_mod = convertTimeEpoch(sync2[key][0][0])
 					if file1_mod < file2_mod:
 						#File 2 correct
-						update(file1, file2_mod, sync2[key][0][1])
+						try_copy(file2, file1, sync2[key][0][1], file2_mod)
 						sync1[key] = sync2[key]
 						#print("Detective Steve has identified that %s is the newest version (both unique)." % file2)
 						done = True
 					if file1_mod > file2_mod:
 						#File 1 correct
-						update(file2, file1_mod, sync1[key][0][1])
+						try_copy(file1, file2, sync1[key][0][1], file1_mod)
 						sync2[key] = sync1[key]
 						#print("Detective Steve has identified that %s is the newest version (both unique)." % file1)
 						done = True
@@ -226,9 +225,9 @@ def merge_dirs(dir1, dir2):
 		else:
 			#Add it to the sync file
 			sync2[key] = sync1[key]
-			if sync1[key][0][1] != "deleted":
-				shutil.copyfile(file1, file2)
-			pass
+			file1_mod = convertTimeEpoch(sync1[key][0][0])
+			try_copy(file1, file2, sync1[key][0][1], file1_mod)
+			#print("Detective Steve has identified that %s is missing from %s." % (file1, file2.split("/")[0]))
 		#Loop through all the keys in the first directory
 	for key in sync2:
 		file1 = "%s/%s" % (dir2, key)
@@ -239,14 +238,16 @@ def merge_dirs(dir1, dir2):
 		#File is not in the other directory
 		else:
 			sync1[key] = sync2[key]
-			if sync2[key][0][1] != "deleted":
-				shutil.copyfile(file1, file2)
-			pass
+			file2_mod = convertTimeEpoch(sync2[key][0][0])
+			try_copy(file1, file2, sync2[key][0][1], file2_mod)
+			#print("Detective Steve has identified that %s is missing from %s." % (file1, file2.split("/")[0]))
 	
 	with open('%s/.sync' % dir1, 'w') as outfile:
-		json.dump(sync1, outfile)
+		outfile.write(json.dumps(sync1, indent=4, sort_keys=True))
+		#json.dump(sync1, outfile)
 	with open('%s/.sync' % dir2, 'w') as outfile2:
-		json.dump(sync2, outfile2)
+		outfile2.write(json.dumps(sync2, indent=4, sort_keys=True))
+		#json.dump(sync2, outfile2)
 	pass
 
 #Requires two arguments to run.
