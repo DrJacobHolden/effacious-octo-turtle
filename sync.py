@@ -267,17 +267,16 @@ start_sync(topdir1, topdir2)
 #There is probably a way around it but it doesn't really make that much difference
 #and is much easier this way. KISS
 while(len(subdir_dict.keys()) != 0):
-	for key in subdir_dict.keys():
-		for dir in subdir_dict[key]:
-			if key is topdir1 or key is topdir2:
-				#differentiate between sub directories and sub-sub directories
-				start_sync("%s/%s" % (topdir1, dir), "%s/%s" % (topdir2, dir))
+	key, value = subdir_dict.popitem()
+	for dirz in value:
+		if key is topdir1 or key is topdir2:
+			#differentiate between sub directories and sub-sub directories
+			start_sync("%s/%s" % (topdir1, dirz), "%s/%s" % (topdir2, dirz))
+		else:
+			maindir = "%s/%s" % (key, dirz)
+			if key.startswith(topdir1):
+				otherdir = "%s%s/%s" % (topdir2, key.lstrip(topdir1), dirz)
 			else:
-				maindir = "%s/%s" % (key, dir)
-				if topdir1 in key:
-					otherdir = "%s%s/%s" % (topdir2, key.lstrip(topdir1), dir)
-				else:
-					otherdir = "%s%s/%s" % (topdir1, key.lstrip(topdir2), dir)
-				start_sync(maindir, otherdir)
-		del subdir_dict[key]
+				otherdir = "%s%s/%s" % (topdir1, key.lstrip(topdir2), dirz)
+			start_sync(maindir, otherdir)
 
