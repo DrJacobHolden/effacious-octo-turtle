@@ -9,6 +9,17 @@ import json
 import hashlib
 
 """
+To make absolutely sure I don't lose any anal retentive marks: (Maybe I'll lose a few for being a passive aggressive dick)
+MY UPI IS TROB525
+@AUTHOR TROB525
+@author TROB525
+trob525
+Tate Robertson
+6727155
+trob525
+"""
+
+"""
 Returns an array containing the current modified time
 and the current hash value.
 """
@@ -252,7 +263,7 @@ def merge_dirs(dir1, dir2):
 
 #Requires two arguments to run.
 if len(sys.argv) != 3:
-	print("Don't push me buddy. (A few more arguments would be nice.)")
+	sys.exit("Don't push me buddy. (A few more arguments would be nice.)")
 
 subdir_dict = {}
 

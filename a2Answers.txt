@@ -1,0 +1,15 @@
+THIS IS A .TXT FILE, IT IS NOT A PDF OR A DOCX IF IT COMES THROUGH AS ONE OF THESE FILES SOMETHING HAS GONE WRONG ON YOUR END.
+
+MY UPI IS TROB525
+
+Question 1:
+This should work fine with any number of files, it would just take longer. However, depending on the system hardware with very large files you might run out of memory but this would require the file to be almost half the memory (so having two copies loaded in would overflow). Other implementations that involve loading all the files into memory would have much more issues in this case. If lots of the files and directories had similar names (containing each other) there might be issues also due to some shortcuts I used when writing the program. However, because of the simplistic way of dealing with a case of two files being unique this is probably not the best solution. Please let me know in the comments if there is something I've missed, it's pretty late now and this assignment has taken much longer than it should have :)
+
+Question 2:
+"If two files have the same signature, they are the same version. (In reality this may not be the case because 
+the file could have been altered and then changed back to its original state.)" - This could be avoided simply by having a modified flag in the file that is set to False when the sync program is run (and not changable through any other means except modifying the file), this is probably an unrealistic solution as it would require modification to the file system and integration with my sync program. But, it would work and that's all that is asked for :)
+
+
+"The  pathnames  sent  to  the  sync  program  will  be  independent.  You  don't  have  to  worry  about  infinite 
+recursion because of one directory being inside the other." - This is the low hanging fruit really. It'd be pretty simple to add a check before the program attempts to run for this situation. The program would be made safer by giving an error and refusing to run. Obviously this doesn't actually solve the problem (i.e. if you actually wanted to sync with a directory that is in the directory) and the best way to do this would be to add something similar to the .gitignore file used by git where you could specify nested sync directories and the program would ignore them when it checks for sub directories.
+
